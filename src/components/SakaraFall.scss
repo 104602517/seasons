@@ -1,0 +1,104 @@
+.petal {
+  background-image: linear-gradient(#ffe1ec, #ffcdd8);
+  display: inline-block;
+  height: 11px;
+  position: relative;
+  width: 10px;
+  border-radius: 30% 30% 100% 100% / 100%;
+  transform: rotate(45deg);
+  animation: petals-flutter 2s infinite;
+  z-index: 10;
+}
+.petal:before {
+  border-bottom: 7px solid #ffe1ec;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-radius: 0px;
+  top: -7px;
+  left: 1px;
+  position: absolute;
+  width: 0;
+  height: 0;
+  content: "";
+}
+.petals {
+  width: 10px;
+  height: 11px;
+  position: relative;
+  margin-top: 0px;
+  margin-left: 50px;
+}
+.p1 {
+  right: 10px;
+  top: 90px;
+  animation: petals-move infinite 5s;
+}
+.p2 {
+  left: 10px;
+  bottom: 0px;
+  animation: petals-move infinite 5s;
+}
+.p3 {
+  left: 25px;
+  top: 65px;
+  animation: petals-move infinite 5s;
+}
+.p4 {
+  right: 30px;
+  bottom: 40px;
+  animation: petals-move infinite 5s;
+}
+.p5 {
+  right: 15px;
+  top: 15px;
+  animation: petals-move infinite 5s;
+}
+body {
+  background-color: white;
+  overflow: hidden;
+}
+.content {
+  text-align: center;
+  font-family: helvetica;
+}
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  animation: petals-fall 6.5s ease-out infinite;
+  mix-blend-mode: lighten;
+}
+@keyframes petals-flutter {
+  0% {
+    transform: rotate(45deg);
+  }
+  50% {
+    transform: rotate(-45deg);
+  }
+  100% {
+    transform: rotate(45deg);
+  }
+}
+@keyframes petals-move {
+  0% {
+    transform: translateX(0px);
+  }
+  50% {
+    transform: translateX(50px);
+  }
+  100% {
+    transform: translateX(0px);
+  }
+}
+@keyframes petals-fall {
+  0% {
+    top: -50%;
+    right: -50%;
+  }
+  100% {
+    top: 100%;
+    right: 100%;
+  }
+}

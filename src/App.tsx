@@ -1,11 +1,33 @@
-import "./App.css";
+import { useRef } from "react";
+import "./App.scss";
 import SeasonChart from "./components/SeasonChart";
+import SakuraFall from "./components/SakuraFall";
 
 function App() {
+  const appRef = useRef<HTMLDivElement>(null);
   return (
-    <div className="app">
+    <div className="app" ref={appRef}>
+      <div className="weather">
+        <SakuraFall />
+        <div className="grass-leaves">
+          {Array.from({ length: 100 }, (_, i) => (
+            <div key={i} className="grass-blade" />
+          ))}
+        </div>
+        <div className="grass-leaves2">
+          {Array.from({ length: 100 }, (_, i) => (
+            <div key={i} className="grass-blade" />
+          ))}
+        </div>
+        <div className="grass-leaves3">
+          {Array.from({ length: 100 }, (_, i) => (
+            <div key={i} className="grass-blade" />
+          ))}
+        </div>
+      </div>
       <main className="app-main">
-        <SeasonChart />
+        <div className="sun"></div>
+        <SeasonChart appRef={appRef} />
       </main>
     </div>
   );
