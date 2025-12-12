@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -7,10 +7,10 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend,
   type ChartOptions,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { useWindowWidth } from "../hooks/index";
 
 ChartJS.register(
   CategoryScale,
@@ -18,8 +18,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   Title,
-  Tooltip,
-  Legend
+  Tooltip
 );
 
 interface Season {
@@ -38,6 +37,7 @@ export default function SeasonChart() {
   const [touchStartX, setTouchStartX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [containerWidth, setContainerWidth] = useState(800);
+  const windowWidth = useWindowWidth();
   const chartRef = useRef<ChartJS<"line">>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartWrapperRef = useRef<HTMLDivElement>(null);
@@ -76,19 +76,42 @@ export default function SeasonChart() {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Calculate scroll boundaries
+  // Calculate scroll boundaries with responsive max translateX
   const totalMonths = seasonsData.length;
-  const maxScrollPosition = Math.max(0, totalMonths - VISIBLE_MONTHS);
-  const scrollPercentage =
-    maxScrollPosition > 0 ? scrollPosition / maxScrollPosition : 0;
+  const baseMaxScrollPosition = Math.max(0, totalMonths - VISIBLE_MONTHS);
+
+  // Calculate target max translateX based on screen width
+  // At 710px: -4000px, wider screens: approach -3800px, narrower screens: approach -4200px
+  const getTargetMaxTranslateX = (width: number) => {
+    if (width >= 710) {
+      // For wider screens: interpolate from -4000px at 710px to -3800px at 1200px+
+      const progress = Math.min((width - 710) / (1800 - 710), 1);
+      return -4000 + progress * 400; // -4000 to -3600
+    } else {
+      // For narrower screens: interpolate from -4000px at 710px to -4200px at 320px
+      const progress = Math.min((710 - width) / (710 - 320), 1);
+      return -4000 - progress * 200; // -4000 to -4200
+    }
+  };
+
+  const targetMaxTranslateX = getTargetMaxTranslateX(windowWidth);
+  const additionalScrollUnits =
+    Math.abs(targetMaxTranslateX) / (containerWidth / VISIBLE_MONTHS) -
+    baseMaxScrollPosition;
+
+  const maxScrollPosition = baseMaxScrollPosition + additionalScrollUnits;
+
+  console.log(
+    targetMaxTranslateX,
+    containerWidth,
+    baseMaxScrollPosition,
+    additionalScrollUnits,
+    maxScrollPosition
+  );
 
   // Calculate viewport position
   const chartWidth = containerWidth * (totalMonths / VISIBLE_MONTHS);
   const translateX = -scrollPosition * (containerWidth / VISIBLE_MONTHS);
-
-  // Navigation handlers
-  const canGoBack = scrollPosition > 0;
-  const canGoForward = scrollPosition < maxScrollPosition;
 
   const smoothScrollTo = useCallback(
     (targetPosition: number) => {
@@ -100,6 +123,7 @@ export default function SeasonChart() {
         0,
         Math.min(maxScrollPosition, targetPosition)
       );
+      console.log(clampedTarget);
       const startTime = performance.now();
 
       const animate = (currentTime: number) => {
@@ -111,7 +135,18 @@ export default function SeasonChart() {
         const interpolatedPosition =
           startPosition + (clampedTarget - startPosition) * easeProgress;
 
-        setScrollPosition(interpolatedPosition);
+        const clampedInterpolatedPosition = Math.max(
+          0,
+          Math.min(maxScrollPosition, interpolatedPosition)
+        );
+
+        console.log(
+          clampedInterpolatedPosition,
+          maxScrollPosition,
+          interpolatedPosition
+        );
+
+        setScrollPosition(clampedInterpolatedPosition);
 
         if (progress < 1) {
           requestAnimationFrame(animate);
@@ -126,45 +161,62 @@ export default function SeasonChart() {
     [scrollPosition, maxScrollPosition, isScrolling]
   );
 
-  const goBack = () => smoothScrollTo(scrollPosition - 1);
-  const goForward = () => smoothScrollTo(scrollPosition + 1);
+  // const handleWheel = useCallback(
+  //   (e: WheelEvent | React.WheelEvent) => {
+  //     e.preventDefault();
 
-  // Touch and scroll handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.touches[0].clientX);
-    setIsDragging(true);
-  };
+  //     const scrollDelta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!isDragging) return;
+  //     const clampedScrollAmount = Math.max(-3, Math.min(3, scrollDelta));
 
-    const touchEndX = e.changedTouches[0].clientX;
-    const diffX = touchStartX - touchEndX;
-    const threshold = 50; // Minimum swipe distance
+  //     smoothScrollTo(scrollPosition + clampedScrollAmount);
+  //   },
+  //   [scrollPosition, smoothScrollTo]
+  // );
 
-    if (Math.abs(diffX) > threshold) {
-      const direction = diffX > 0 ? 1 : -1;
-      smoothScrollTo(scrollPosition + direction);
-    }
+  // const handleTouchStart = (e: React.TouchEvent) => {
+  //   setTouchStartX(e.touches[0].clientX);
+  //   setIsDragging(true);
+  // };
 
-    setIsDragging(false);
-  };
+  // const handleTouchEnd = (e: React.TouchEvent) => {
+  //   if (!isDragging) return;
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (isDragging) {
-      e.preventDefault();
-    }
-  };
+  //   const touchEndX = e.changedTouches[0].clientX;
+  //   const diffX = touchStartX - touchEndX;
+  //   const threshold = 50; // Minimum swipe distance
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const direction = e.deltaX > 0 ? 0.5 : -0.5;
-    smoothScrollTo(scrollPosition + direction);
-  };
+  //   if (Math.abs(diffX) > threshold) {
+  //     const clampedScrollAmount = Math.max(-3, Math.min(3, diffX));
 
-  if (loading) {
-    return <div className="loading">Loading seasons data...</div>;
-  }
+  //     smoothScrollTo(scrollPosition + clampedScrollAmount);
+  //   }
+
+  //   setIsDragging(false);
+  // };
+
+  // const handleTouchMove = useCallback((e: TouchEvent | React.TouchEvent) => {
+  //   if (isDragging) {
+  //     e.preventDefault();
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   const chartWrapper = chartWrapperRef.current;
+  //   if (!chartWrapper) return;
+
+  //   chartWrapper.addEventListener("touchmove", handleTouchMove, {
+  //     passive: false,
+  //   });
+
+  //   return () => {
+  //     chartWrapper.removeEventListener("touchmove", handleTouchMove);
+  //   };
+  // }, [handleTouchMove]);
+
+  // if (loading) {
+  //   return <div className="loading">Loading seasons data...</div>;
+  // }
 
   // Prepare chart data for ALL seasons (full chart)
   const labels = seasonsData.map(
@@ -199,7 +251,7 @@ export default function SeasonChart() {
     layout: {
       padding: {
         left: 10,
-        right: 10,
+        right: 210,
         top: 10,
         bottom: 10,
       },
@@ -208,21 +260,17 @@ export default function SeasonChart() {
       x: {
         title: {
           display: true,
-          text: "Solar Terms (Traditional Chinese Calendar)",
+          text: "節氣名稱",
           font: {
             size: 14,
             weight: "bold",
           },
         },
-        ticks: {
-          maxRotation: 45,
-          minRotation: 45,
-        },
       },
       y: {
         title: {
           display: true,
-          text: "Energy Level",
+          text: "能量指數",
           font: {
             size: 14,
             weight: "bold",
@@ -236,19 +284,6 @@ export default function SeasonChart() {
       },
     },
     plugins: {
-      title: {
-        display: true,
-        text: "Energy Levels Through Traditional Chinese Solar Terms",
-        font: {
-          size: 18,
-          weight: "bold",
-        },
-        padding: 20,
-      },
-      legend: {
-        display: true,
-        position: "top",
-      },
       tooltip: {
         callbacks: {
           beforeBody: (tooltipItems) => {
@@ -273,62 +308,17 @@ export default function SeasonChart() {
 
   return (
     <div className="chart-container">
-      {/* Navigation Controls */}
-      <div className="chart-navigation">
-        <button
-          onClick={goBack}
-          disabled={!canGoBack || isScrolling}
-          className={`nav-button nav-button-left ${
-            !canGoBack || isScrolling ? "disabled" : ""
-          }`}
-        >
-          ← Previous
-        </button>
-
-        <div className="chart-info">
-          <span className="month-range">
-            Showing {Math.floor(scrollPosition) + 1} -{" "}
-            {Math.min(
-              Math.floor(scrollPosition) + VISIBLE_MONTHS,
-              seasonsData.length
-            )}{" "}
-            of {seasonsData.length} solar terms
-          </span>
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{
-                width: `${scrollPercentage * 100}%`,
-                transition: isScrolling ? "none" : "width 0.3s ease",
-              }}
-            />
-          </div>
-        </div>
-
-        <button
-          onClick={goForward}
-          disabled={!canGoForward || isScrolling}
-          className={`nav-button nav-button-right ${
-            !canGoForward || isScrolling ? "disabled" : ""
-          }`}
-        >
-          Next →
-        </button>
-      </div>
-
       <div
         ref={chartWrapperRef}
         className={`chart-viewport ${isScrolling ? "scrolling" : ""}`}
-        onWheel={handleWheel}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchMove={handleTouchMove}
+        // onTouchStart={handleTouchStart}
+        // onTouchEnd={handleTouchEnd}
+        // onTouchMove={handleTouchMove}
       >
         <div
           ref={containerRef}
           className="chart-container-inner"
           style={{
-            width: `${(totalMonths / VISIBLE_MONTHS) * 100}%`,
             transform: `translateX(${translateX}px)`,
             transition: isScrolling
               ? "none"
