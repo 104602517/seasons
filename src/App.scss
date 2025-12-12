@@ -145,7 +145,7 @@ $winter-overlay: rgba(255, 255, 255, 0.27);
 .grass-leaves,
 .grass-leaves2,
 .grass-leaves3 {
-  position: absolute;
+  position: fixed;
   bottom: -10px;
   left: 0;
   width: 100%;

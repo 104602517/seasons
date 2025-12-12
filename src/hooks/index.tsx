@@ -108,20 +108,19 @@ export const useVisibleSeasons = (
       setVisibleRange(range);
       if (range.currentSeason?.date && appRef.current) {
         // Parse the month from the date string
-        const date = new Date(range.currentSeason.date);
-        const month = date.getMonth() + 1; // getMonth() returns 0-11, so add 1
+        const dateString = range.currentSeason.date;
+        const [month, _] = dateString.split("/");
 
         // Remove all existing season classes
         appRef.current.classList.remove("spring", "summer", "autumn", "winter");
-
         // Add the appropriate season class based on month
-        if ([3, 4, 5].includes(month)) {
+        if (["3", "4", "5"].includes(month)) {
           appRef.current.classList.add("spring");
-        } else if ([6, 7, 8].includes(month)) {
+        } else if (["6", "7", "8"].includes(month)) {
           appRef.current.classList.add("summer");
-        } else if ([9, 10, 11].includes(month)) {
+        } else if (["9", "10", "11"].includes(month)) {
           appRef.current.classList.add("autumn");
-        } else if ([12, 1, 2].includes(month)) {
+        } else if (["12", "1", "2"].includes(month)) {
           appRef.current.classList.add("winter");
         }
       }
