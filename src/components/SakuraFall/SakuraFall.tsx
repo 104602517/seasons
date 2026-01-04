@@ -1,5 +1,5 @@
 import React from "react";
-import "./SakaraFall.scss";
+import "./SakuraFall.scss";
 
 interface SakuraFallProps {
   petalCount?: number;

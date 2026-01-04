@@ -152,11 +152,6 @@ export default function SeasonChart(props: SeasonProps) {
     plugins: {
       tooltip: {
         callbacks: {
-          beforeBody: (tooltipItems) => {
-            const index = tooltipItems[0].dataIndex;
-            const season = seasonsData[index];
-            return [`Date: ${season.date}`, `Energy: ${season.energy}`];
-          },
           afterBody: (tooltipItems) => {
             const index = tooltipItems[0].dataIndex;
             const season = seasonsData[index];

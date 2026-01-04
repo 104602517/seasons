@@ -1,7 +1,9 @@
 import { useRef } from "react";
 import "./App.scss";
 import SeasonChart from "./components/SeasonChart";
-import SakuraFall from "./components/SakuraFall";
+import SakuraFall from "./components/SakuraFall/SakuraFall";
+import RainFall from "./components/RainFall/RainFall";
+import LightningEffect from "./components/LightningEffect/LightningEffect";
 
 function App() {
   const appRef = useRef<HTMLDivElement>(null);
@@ -9,6 +11,7 @@ function App() {
     <div className="app" ref={appRef}>
       <div className="weather">
         <SakuraFall />
+        <RainFall />
         <div className="grass-leaves">
           {Array.from({ length: 100 }, (_, i) => (
             <div key={i} className="grass-blade" />
@@ -24,6 +27,7 @@ function App() {
             <div key={i} className="grass-blade" />
           ))}
         </div>
+        <LightningEffect />
       </div>
       <main className="app-main">
         <div className="sun"></div>

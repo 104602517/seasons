@@ -118,6 +118,16 @@ $winter-overlay: rgba(255, 255, 255, 0.27);
     background: $spring-overlay;
   }
 
+  &.spring {
+    .grass-leaves,
+    .grass-leaves2,
+    .grass-leaves3 {
+      will-change: transform;
+      transform: translateZ(0) translateY(0px);
+      transition: transform 1s ease-in-out;
+    }
+  }
+
   &.autumn .sun::after {
     box-shadow: 0 0 35px 5px $autumn-overlay,
       0 0 25px 10px $autumn-overlay inset;
@@ -145,6 +155,9 @@ $winter-overlay: rgba(255, 255, 255, 0.27);
 .grass-leaves,
 .grass-leaves2,
 .grass-leaves3 {
+  will-change: transform;
+  transform: translateZ(0) translateY(100px);
+  transition: transform 1s ease-in-out;
   position: fixed;
   bottom: -10px;
   left: 0;
@@ -156,17 +169,16 @@ $winter-overlay: rgba(255, 255, 255, 0.27);
   .grass-blade {
     position: absolute;
     bottom: 0;
-    width: 3px;
     background: linear-gradient(to top, #558b2f, #7cb342, #8bc34a);
     border-radius: 50% 50% 50% 50%;
     transform-origin: bottom center;
     animation: bladeWave 2.5s ease-in-out infinite;
 
-    // Generate random grass blades using SCSS loop
     @for $i from 1 through 100 {
       &:nth-child(#{$i}) {
         left: #{random(100)} + "%";
         height: #{25 + random(30)}px;
+        width: #{2 + random(2)}px;
         animation-delay: #{random(25) / 10}s;
       }
     }
@@ -179,6 +191,7 @@ $winter-overlay: rgba(255, 255, 255, 0.27);
       &:nth-child(#{$i}) {
         left: #{random(100) + 2} + "%";
         height: #{25 + random(60)}px;
+        width: #{1 + random(2)}px;
         animation-delay: #{random(15) / 10}s;
       }
     }
@@ -189,8 +202,9 @@ $winter-overlay: rgba(255, 255, 255, 0.27);
   .grass-blade {
     @for $i from 1 through 100 {
       &:nth-child(#{$i}) {
-        left: #{random(100) -2} + "%";
+        left: #{random(100) - 2} + "%";
         height: #{25 + random(45)}px;
+        width: #{2 + random(2)}px;
         animation-delay: #{random(45) / 10}s;
       }
     }

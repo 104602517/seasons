@@ -60,6 +60,16 @@ body {
 .content {
   text-align: center;
   font-family: helvetica;
+  opacity: 0;
+  will-change: opacity;
+  transition: opacity 1s ease-in-out;
+}
+.app.spring {
+  .content {
+    opacity: 1;
+    will-change: opacity;
+    transition: opacity 1s ease-in-out;
+  }
 }
 .container {
   display: flex;
