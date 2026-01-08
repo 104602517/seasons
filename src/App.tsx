@@ -4,6 +4,7 @@ import SeasonChart from "./components/SeasonChart";
 import SakuraFall from "./components/SakuraFall/SakuraFall";
 import RainFall from "./components/RainFall/RainFall";
 import LightningEffect from "./components/LightningEffect/LightningEffect";
+import GrowingTree from "./components/GrowingTree/GrowingTree";
 
 function App() {
   const appRef = useRef<HTMLDivElement>(null);
@@ -28,6 +29,7 @@ function App() {
           ))}
         </div>
         <LightningEffect />
+        <GrowingTree />
       </div>
       <main className="app-main">
         <div className="sun"></div>
